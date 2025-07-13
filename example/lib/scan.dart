@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:scan_snap/scan.dart';
+import 'package:scan_snap/scan_snap.dart';
 
 class ScanPage extends StatefulWidget {
   @override

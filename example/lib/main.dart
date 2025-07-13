@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'package:flutter/services.dart';
-import 'package:scan_snap/scan.dart';
+import 'package:scan_snap/scan_snap.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:scan_example/scan.dart';
 
