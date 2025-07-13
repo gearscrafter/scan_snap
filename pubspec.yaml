@@ -1,7 +1,7 @@
 name: scan_snap
 description: scan qrcode & barcode in widget tree with custom options.Accurately decode qrcode & barcode image from path.
 version: 0.0.1
-homepage: https://github.com/flutter-package/scan_snap
+homepage: https://github.com/gearscrafter/scan_snap
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
