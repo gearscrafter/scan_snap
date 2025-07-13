@@ -4,11 +4,11 @@ import Vision
 
 public class SwiftScanPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
-    let channel = FlutterMethodChannel(name: "chavesgu/scan", binaryMessenger: registrar.messenger())
+    let channel = FlutterMethodChannel(name: "scan_snap/scan", binaryMessenger: registrar.messenger())
     let instance = SwiftScanPlugin()
     registrar.addMethodCallDelegate(instance, channel: channel)
     
-    registrar.register(ScanViewFactory(registrar: registrar), withId: "chavesgu/scan_view");
+    registrar.register(ScanViewFactory(registrar: registrar), withId: "scan_snap/scan_view");
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {

@@ -35,9 +35,9 @@ public class ScanView: UIView,AVCaptureMetadataOutputObjectsDelegate,FlutterPlug
   
   init(_ frame:CGRect, viewId:Int64, args: Any?,registrar: FlutterPluginRegistrar) {
     super.init(frame: frame);
-    self.queue = DispatchQueue.init(label: "com.chavesgu.scan", attributes: .concurrent);
+    self.queue = DispatchQueue.init(label: "com.gearscrafter.scan_snap", attributes: .concurrent);
     self.session = AVCaptureSession();
-    self.channel = FlutterMethodChannel(name: "chavesgu/scan/method_\(viewId)", binaryMessenger: registrar.messenger());
+    self.channel = FlutterMethodChannel(name: "scan_snap/scan/method_\(viewId)", binaryMessenger: registrar.messenger());
     registrar.addMethodCallDelegate(self, channel: self.channel!);
 //    registrar.addApplicationDelegate(self);
     

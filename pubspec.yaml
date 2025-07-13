@@ -27,7 +27,7 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.chavesgu.scan
+        package: com.gearscrafter.scan_snap
         pluginClass: ScanPlugin
       ios:
         pluginClass: ScanPlugin

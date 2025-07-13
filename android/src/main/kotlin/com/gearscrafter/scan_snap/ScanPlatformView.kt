@@ -1,4 +1,4 @@
-package com.chavesgu.scan
+package com.gearscrafter.scan_snap
 
 import android.Manifest
 import android.app.Activity
@@ -35,7 +35,7 @@ class ScanPlatformView(
         private const val TAG = "ScanPlatformView"
     }
 
-    private val channel = MethodChannel(messenger, "chavesgu/scan/method_$viewId")
+    private val channel = MethodChannel(messenger, "scan_snap/scan/method_$viewId")
     private var flashlightOn = false
 
     // Get the LifecycleOwner to observe activity lifecycle events

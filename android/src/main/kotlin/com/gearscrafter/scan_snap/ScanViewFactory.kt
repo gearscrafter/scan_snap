@@ -1,4 +1,4 @@
-package com.chavesgu.scan
+package com.gearscrafter.scan_snap
 
 import android.content.Context
 import android.util.Log

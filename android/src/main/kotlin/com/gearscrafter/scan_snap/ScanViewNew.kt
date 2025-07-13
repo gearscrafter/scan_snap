@@ -1,4 +1,4 @@
-package com.chavesgu.scan // Asegúrate de que este sea el paquete correcto para tu proyecto
+package com.gearscrafter.scan_snap
 
 import android.content.Context
 import android.os.Build
@@ -183,7 +183,8 @@ class ScanViewNew(
      */
     fun pauseCamera() {
         Log.d(TAG, "⏸️ Camera paused")
-        imageAnalysis?.clearAnalyzer()
+        cameraProvider?.unbindAll()
+        cameraStarted = false
     }
 
     /**

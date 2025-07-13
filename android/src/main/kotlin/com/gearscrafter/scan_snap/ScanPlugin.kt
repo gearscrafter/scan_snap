@@ -1,4 +1,4 @@
-package com.chavesgu.scan
+package com.gearscrafter.scan_snap
 
 import android.content.Context
 import android.os.Build
@@ -35,10 +35,10 @@ class ScanPlugin : FlutterPlugin, ActivityAware, MethodChannel.MethodCallHandler
      */
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         flutterBinding = binding
-        channel = MethodChannel(binding.binaryMessenger, "chavesgu/scan")
+        channel = MethodChannel(binding.binaryMessenger, "scan_snap/scan")
         channel?.setMethodCallHandler(this)
         viewFactory = ScanViewFactory(binding.binaryMessenger)
-        binding.platformViewRegistry.registerViewFactory("chavesgu/scan_view", viewFactory!!)
+        binding.platformViewRegistry.registerViewFactory("scan_snap/scan_view", viewFactory!!)
     }
 
     /**

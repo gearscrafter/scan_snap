@@ -8,7 +8,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('Scan class (static methods)', () {
-    const MethodChannel channel = MethodChannel('chavesgu/scan');
+    const MethodChannel channel = MethodChannel('scan_snap/scan');
 
     final List<MethodCall> log = <MethodCall>[];
 
@@ -47,7 +47,7 @@ void main() {
   });
 
   group('ScanView and ScanController', () {
-    const MethodChannel viewChannel = MethodChannel('chavesgu/scan/method_0');
+    const MethodChannel viewChannel = MethodChannel('scan_snap/scan/method_0');
     final List<MethodCall> log = <MethodCall>[];
 
     setUp(() {
