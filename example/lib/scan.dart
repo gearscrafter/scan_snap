@@ -28,7 +28,7 @@ class _ScanPageState extends State<ScanPage> {
   Widget build(BuildContext context) {
     return PopScope<String>(
       canPop: false,
-      onPopInvoked: (bool didPop) {
+      onPopInvokedWithResult: (bool didPop, _) {
         if (!didPop && !_isDisposing) {
           _handlePop();
         }

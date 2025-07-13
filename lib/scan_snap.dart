@@ -123,13 +123,16 @@ class _ScanViewState extends State<ScanView> {
   }
 
   /// Parameters passed to the native view during creation.
-  Map<String, dynamic> get _creationParams => {
-        "r": widget.scanLineColor.red,
-        "g": widget.scanLineColor.green,
-        "b": widget.scanLineColor.blue,
-        "a": widget.scanLineColor.opacity,
-        "scale": widget.scanAreaScale,
-      };
+  Map<String, dynamic> get _creationParams {
+    final color = widget.scanLineColor;
+    return {
+      "r": (color.r * 1).round() & 0xff,
+      "g": (color.g * 1).round() & 0xff,
+      "b": (color.b * 1).round() & 0xff,
+      "a": (color.a * 1).round() & 0xff,
+      "scale": widget.scanAreaScale,
+    };
+  }
 
   /// Called when the platform view is ready. Initializes the communication channel.
   void _onPlatformViewCreated(int id) {
