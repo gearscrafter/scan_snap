@@ -1,11 +1,9 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'package:flutter/services.dart';
-import 'package:scan/scan.dart';
-import 'package:images_picker/images_picker.dart';
+import 'package:scan_snap/scan.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:scan_example/scan.dart';
 
 void main() {
@@ -19,7 +17,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
-
+  final ImagePicker _picker = ImagePicker();
   String qrcode = 'Unknown';
 
   @override
@@ -51,39 +49,55 @@ class _MyAppState extends State<MyApp> {
               appBar: AppBar(
                 title: const Text('Plugin example app'),
               ),
-              body: Column(
-                children: [
-                  Text('Running on: $_platformVersion\n'),
-                  Wrap(
-                    children: [
-                      ElevatedButton(
-                        child: Text("parse from image"),
-                        onPressed: () async {
-                          List<Media>? res = await ImagesPicker.pick();
-                          if (res != null) {
+              body: Builder(builder: (context) {
+                return Column(
+                  children: [
+                    Text('Running on: $_platformVersion\n'),
+                    Wrap(
+                      children: [
+                        ElevatedButton(
+                          child: Text("parse from image"),
+                          onPressed: () async {
+                            final List<XFile> res =
+                                await _picker.pickMultiImage();
                             String? str = await Scan.parse(res[0].path);
                             if (str != null) {
                               setState(() {
                                 qrcode = str;
                               });
                             }
-                          }
-                        },
-                      ),
-                      ElevatedButton(
-                        child: Text('go scan page'),
-                        onPressed: () {
-                          Navigator.push(context,
-                              MaterialPageRoute(builder: (_) {
-                            return ScanPage();
-                          }));
-                        },
-                      ),
-                    ],
-                  ),
-                  Text('scan result is $qrcode'),
-                ],
-              ),
+                          },
+                        ),
+                        ElevatedButton(
+                          child: Text('go scan page'),
+                          onPressed: () async {
+                            final result = await Navigator.of(context)
+                                .push(PageRouteBuilder(
+                              pageBuilder:
+                                  (context, animation, secondaryAnimation) =>
+                                      ScanPage(),
+                              transitionDuration: Duration.zero,
+                              reverseTransitionDuration:
+                                  Duration(milliseconds: 100),
+                              transitionsBuilder: (context, animation,
+                                  secondaryAnimation, child) {
+                                return FadeTransition(
+                                  opacity: animation,
+                                  child: child,
+                                );
+                              },
+                            ));
+                            setState(() {
+                              qrcode = result.toString();
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    Text('scan result is $qrcode'),
+                  ],
+                );
+              }),
             ),
       },
     );
