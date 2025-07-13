@@ -39,8 +39,8 @@ class ScanPlatformView(
     private var flashlightOn = false
 
     // Get the LifecycleOwner to observe activity lifecycle events
-    private val lifecycleOwner: LifecycleOwner = context as? LifecycleOwner
-        ?: activity as? LifecycleOwner
+    private val lifecycleOwner: LifecycleOwner = (context as? LifecycleOwner)
+        ?: (activity as? LifecycleOwner)
         ?: throw IllegalStateException("No LifecycleOwner available")
 
     private val scanViewNew = ScanViewNew(context, lifecycleOwner, channel).apply {
@@ -61,16 +61,9 @@ class ScanPlatformView(
 
     init {
         Log.d(TAG, "🔧 ScanPlatformView initialized")
-
         channel.setMethodCallHandler(this)
-
-        // Register permission callback
-        binding.addRequestPermissionsResultListener { requestCode, _, grantResults ->
-            if (requestCode == CAMERA_REQUEST_CODE &&
-                grantResults.isNotEmpty() &&
-                grantResults[0] == PackageManager.PERMISSION_GRANTED
-            ) {
-                Log.d(TAG, "✅ Camera permission granted via request")
+        binding.addRequestPermissionsResultListener { reqCode, _, grantResults ->
+            if (reqCode == CAMERA_REQUEST_CODE && grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
                 startCameraSafe()
             } else {
                 Log.e(TAG, "❌ Camera permission denied via request")
@@ -81,14 +74,14 @@ class ScanPlatformView(
         // Observe Android lifecycle to manage camera lifecycle properly
         lifecycleOwner.lifecycle.addObserver(object : DefaultLifecycleObserver {
             override fun onPause(owner: LifecycleOwner) {
-                Log.d(TAG, "📴 Lifecycle onPause: pausing camera")
-                scanViewNew.pauseCamera()
+                Log.d(TAG, "📴 Lifecycle onPause: stopping camera completely.")
+                scanViewNew.stopCameraForLifecycle() 
                 scanDrawView.pause()
             }
 
             override fun onResume(owner: LifecycleOwner) {
-                Log.d(TAG, "📷 Lifecycle onResume: resuming camera")
-                scanViewNew.resumeCamera()
+                Log.d(TAG, "📷 Lifecycle onResume: ensuring camera is started.")
+                scanViewNew.startCamera() 
                 scanDrawView.resume()
             }
 
@@ -97,23 +90,15 @@ class ScanPlatformView(
                 dispose()
             }
         })
-
         requestCameraPermissionIfNeeded()
     }
 
     /**
      * Check camera permission, and request it if necessary.
-     */
+    */
     private fun requestCameraPermissionIfNeeded() {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
-            != PackageManager.PERMISSION_GRANTED
-        ) {
-            Log.w(TAG, "⚠️ Camera permission not granted. Requesting...")
-            ActivityCompat.requestPermissions(
-                activity,
-                arrayOf(Manifest.permission.CAMERA),
-                CAMERA_REQUEST_CODE
-            )
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.CAMERA), CAMERA_REQUEST_CODE)
         } else {
             Log.d(TAG, "✅ Camera permission already granted")
             startCameraSafe()
@@ -122,7 +107,7 @@ class ScanPlatformView(
 
     /**
      * Start the camera safely only if the activity is not finishing.
-     */
+    */
     private fun startCameraSafe() {
         if (!activity.isFinishing) {
             scanViewNew.startCamera()
@@ -143,15 +128,15 @@ class ScanPlatformView(
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
             "resume" -> {
-                Log.d(TAG, "🎬 Resume command received")
-                scanViewNew.resumeCamera()
+                Log.d(TAG, "🎬 'resume' command received")
+                scanViewNew.resumeScanning()
                 scanDrawView.resume()
                 result.success(null)
             }
 
             "pause" -> {
-                Log.d(TAG, "⏸ Pause command received")
-                scanViewNew.pauseCamera()
+                Log.d(TAG, "⏸️ 'pause' command received")
+                scanViewNew.pauseScanning()
                 scanDrawView.pause()
                 result.success(null)
             }
@@ -166,7 +151,6 @@ class ScanPlatformView(
                 dispose()
                 result.success(null)
             }
-
             else -> result.notImplemented()
         }
     }
@@ -177,7 +161,7 @@ class ScanPlatformView(
     override fun onCapture(text: String) {
         Log.i(TAG, "📸 QR Captured: $text")
         channel.invokeMethod("onCaptured", text)
-        scanViewNew.pauseCamera()
+        scanViewNew.pauseScanning()
         scanDrawView.pause()
     }
 }

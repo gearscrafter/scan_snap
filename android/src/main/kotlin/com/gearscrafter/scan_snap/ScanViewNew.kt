@@ -43,6 +43,7 @@ class ScanViewNew(
     private var imageAnalysis: ImageAnalysis? = null
     private var scannedOnce = false
     private var cameraStarted = false
+
     companion object {
         private const val TAG = "ScanViewNew"
     }
@@ -53,11 +54,11 @@ class ScanViewNew(
     }
 
     /**
-     * Initializes and starts the camera using CameraX if it hasn't been started already.
+     * Starts the camera using CameraX, if not already started.
      */
     fun startCamera() {
         if (cameraStarted) {
-            Log.w(TAG, "⚠️ startCamera() was already called. Ignoring...")
+            Log.w(TAG, "⚠️ startCamera() has already been called. Ignoring...")
             return
         }
         cameraStarted = true
@@ -67,73 +68,94 @@ class ScanViewNew(
         cameraProviderFuture.addListener({
             try {
                 cameraProvider = cameraProviderFuture.get()
-                bindCamera()
+                bindCameraUseCases()
             } catch (e: Exception) {
-                Log.e(TAG, "❌ Failed to get CameraProvider", e)
+                Log.e(TAG, "❌ Failed to obtain CameraProvider", e)
+                channel?.invokeMethod("onCameraError", null)
             }
         }, ContextCompat.getMainExecutor(context))
     }
 
     /**
-     * Binds the camera to the lifecycle and sets up preview and analysis use cases.
+     * Temporarily stops image analysis. 
+     * Used when the "pause" button is pressed on the Flutter UI.
      */
-    private fun bindCamera() {
-        val provider = cameraProvider ?: run {
-            Log.e(TAG, "CameraProvider is not available.")
-            return
-        }
+    fun pauseScanning() {
+        Log.d(TAG, "⏸️ Pausing image analysis only.")
+        imageAnalysis?.clearAnalyzer()
+    }
 
+    /**
+     * Resumes image analysis and resets internal state to allow a new scan.
+     * Used when the "resume" button is pressed on the Flutter UI.
+     */
+    fun resumeScanning() {
+        Log.d(TAG, "🎬 Resuming image analysis.")
+        scannedOnce = false
+        val executor = cameraExecutor ?: return
+        imageAnalysis?.setAnalyzer(executor, getAnalyzer())
+    }
+
+    /**
+     * Stops and unbinds all camera use cases.
+     * Typically called from Flutter's lifecycle onPause event.
+     */
+    fun stopCameraForLifecycle() {
+        Log.d(TAG, "⛔ Stopping and unbinding camera (lifecycle onPause).")
+        cameraProvider?.unbindAll()
+        cameraStarted = false
+    }
+
+    /**
+     * Releases all camera-related resources.
+     * Called when the view is about to be destroyed.
+     */
+    fun disposeView() {
+        Log.d(TAG, "🧹 Releasing all camera resources.")
+        try {
+            stopCameraForLifecycle()
+            cameraExecutor?.shutdown()
+            cameraExecutor = null
+            cameraProvider = null
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error while releasing camera resources.", e)
+        }
+    }
+
+    /**
+     * Sets the callback to be triggered when a QR code is captured.
+     */
+    fun setCaptureListener(listener: CaptureListener?) {
+        this.captureListener = listener
+    }
+
+    /**
+     * Toggles the flashlight (torch) on or off.
+     */
+    fun toggleTorch(on: Boolean) {
+        cameraControl?.enableTorch(on)
+    }
+
+    private fun bindCameraUseCases() {
+        val provider = cameraProvider ?: return
         try {
             provider.unbindAll()
         } catch (e: Exception) {
-            Log.w(TAG, "⚠️ Error during unbindAll (can be normal): ${e.message}")
+            Log.w(TAG, "⚠️ Error during unbindAll (can be safely ignored): ${e.message}")
         }
 
         val preview = Preview.Builder()
             .setTargetRotation(previewView.display?.rotation ?: Surface.ROTATION_0)
             .build()
-            .also {
-                it.setSurfaceProvider(previewView.surfaceProvider)
-            }
+            .also { it.setSurfaceProvider(previewView.surfaceProvider) }
 
-        // Setup the image analyzer for QR scanning
         imageAnalysis = ImageAnalysis.Builder()
             .setTargetResolution(android.util.Size(1280, 720))
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .build()
 
-        Log.d(TAG, "📦 ImageAnalysis configurado, esperando 500ms...")
-
-       
         val executor = cameraExecutor ?: return
-
-        imageAnalysis?.setAnalyzer(executor) { imageProxy ->
-            try {
-                if (scannedOnce) {
-                    return@setAnalyzer
-                }
-
-                val result = QRCodeDecoder.decodeQRCode(imageProxy)
-
-                if (result != null) {
-                    scannedOnce = true
-                    Log.i(TAG, "✅ QR code detected: $result")
-
-                    // Notify Flutter and vibrate on the main thread
-                    Handler(Looper.getMainLooper()).post {
-                        captureListener?.onCapture(result)
-                        vibrate()
-                    }
-                }
-
-            } catch (e: Exception) {
-                Log.e(TAG, "❌ Error analyzing image", e)
-            } finally {
-                // Always close imageProxy to avoid blocking the stream
-                imageProxy.close()
-            }
-        }
-       
+        imageAnalysis?.setAnalyzer(executor, getAnalyzer())
 
         try {
             val camera = provider.bindToLifecycle(
@@ -146,69 +168,32 @@ class ScanViewNew(
             Log.d(TAG, "📷 Camera successfully bound.")
             channel?.invokeMethod("onCameraReady", null)
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Failed to bind camera", e)
+            Log.e(TAG, "❌ Failed to bind camera use cases.", e)
+            channel?.invokeMethod("onCameraError", null)
         }
     }
 
-    /**
-     * Sets the listener that will be called when a QR code is captured.
-     */
-    fun setCaptureListener(listener: CaptureListener?) {
-        captureListener = listener
-    }
-
-
-    /**
-     * Toggles the device flashlight (torch) on or off.
-     */
-    fun toggleTorch(on: Boolean) {
-        try {
-            cameraControl?.enableTorch(on)
-            Log.d(TAG, "💡 Torch ${if (on) "enabled" else "disabled"}")
-        } catch (e: Exception) {
-            Log.w(TAG, "⚠️ Failed to toggle torch", e)
+    private fun getAnalyzer(): ImageAnalysis.Analyzer {
+        return ImageAnalysis.Analyzer { imageProxy ->
+            try {
+                if (!scannedOnce) {
+                    QRCodeDecoder.decodeQRCode(imageProxy)?.let { result ->
+                        scannedOnce = true
+                        Log.i(TAG, "✅ QR code detected: $result")
+                        Handler(Looper.getMainLooper()).post {
+                            captureListener?.onCapture(result)
+                            vibrate()
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "❌ Error analyzing image", e)
+            } finally {
+                imageProxy.close()
+            }
         }
     }
 
-    /**
-     * Resets the scanned state, allowing another QR code to be scanned.
-     */
-    fun resumeCamera() {
-        scannedOnce = false
-        Log.d(TAG, "🔁 Camera resumed (ready for another scan).")
-    }
-
-    /**
-     * Clears the image analyzer to stop processing frames.
-     */
-    fun pauseCamera() {
-        Log.d(TAG, "⏸️ Camera paused")
-        cameraProvider?.unbindAll()
-        cameraStarted = false
-    }
-
-    /**
-     * Releases camera resources and shuts down executors.
-     */
-    fun disposeView() {
-        Log.d(TAG, "🧹Releasing camera resources...")
-        try {
-            cameraProvider?.unbindAll()
-            cameraExecutor?.shutdown()
-            
-            // Reseteamos las variables
-            cameraExecutor = null
-            cameraProvider = null
-            cameraStarted = false
-            Log.d(TAG, "Resources successfully released.")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to release camera resources.", e)
-        } 
-    }
-
-    /**
-     * Vibrates the device to indicate a QR code has been captured.
-     */
     private fun vibrate() {
         val vibrator = ContextCompat.getSystemService(context, Vibrator::class.java)
         vibrator?.let {

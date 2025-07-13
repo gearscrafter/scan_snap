@@ -48,18 +48,27 @@ class ScanView extends StatefulWidget {
 
 class _ScanViewState extends State<ScanView> {
   bool _isCameraReady = false;
+  bool _allowGestures = false;
 
   @override
   void initState() {
     super.initState();
 
     // Set camera ready callback
-    widget.controller?.setOnCameraReady(() {
-      if (mounted) {
-        setState(() {
-          _isCameraReady = true;
-        });
-      }
+    widget.controller?.setOnCameraReady(() async {
+      if (!mounted) return;
+
+      setState(() {
+        _isCameraReady = true;
+      });
+
+      await Future.delayed(const Duration(milliseconds: 200));
+
+      if (!mounted) return;
+
+      setState(() {
+        _allowGestures = true;
+      });
     });
   }
 
@@ -79,7 +88,7 @@ class _ScanViewState extends State<ScanView> {
             viewType: 'scan_snap/scan_view',
             surfaceFactory: (context, controller) {
               return IgnorePointer(
-                ignoring: !_isCameraReady,
+                ignoring: !_allowGestures,
                 child: PlatformViewSurface(
                   controller: controller,
                   hitTestBehavior: PlatformViewHitTestBehavior.opaque,
@@ -101,10 +110,13 @@ class _ScanViewState extends State<ScanView> {
                 ..create();
             },
           ),
-          if (!_isCameraReady)
-            Positioned.fill(
-              child: Container(color: Colors.black),
+          AnimatedOpacity(
+            opacity: _isCameraReady ? 0.0 : 1.0,
+            duration: const Duration(milliseconds: 300),
+            child: Container(
+              color: Colors.black,
             ),
+          ),
         ],
       );
     }
