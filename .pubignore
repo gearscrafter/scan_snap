@@ -1,0 +1,44 @@
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# macOS
+.DS_Store
+
+# Flutter/Dart build/cache
+.dart_tool/
+.packages
+.pub/
+.pub-cache/
+build/
+
+# Flutter generated
+.flutter-plugins
+.flutter-plugins-dependencies
+.melos_tool/
+
+# Android/iOS build intermediates
+**/ios/Flutter/.last_build_id
+**/ios/Pods/
+**/android/.gradle/
+**/android/app/build/
+
+# Web output
+lib/generated_plugin_registrant.dart
+
+# Examples (exclude build artifacts from example)
+example/build/
+example/.dart_tool/
+example/.packages
+example/.pub/
+example/.idea/
+example/.vscode/
+
+# Tests (optional)
+coverage/
+test_outputs/
+
+# Symbolication / obfuscation
+*.symbols
+*.map.json
