@@ -31,3 +31,5 @@ flutter:
         pluginClass: ScanPlugin
       ios:
         pluginClass: ScanPlugin
+
+license: MIT

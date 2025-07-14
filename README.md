@@ -1,6 +1,7 @@
 # scan_snap
 
-[![pub](https://img.shields.io/badge/pub-0.0.1-blue)](https://pub.dev/packages/scan_snap)
+[![pub](https://img.shields.io/badge/pub-0.0.1-blue)](https://pub.dev/packages/scan_snap) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 
 A simple, customizable, and high-performance QR and barcode scanner widget for Flutter. Easily decode codes from the live camera stream or from image files.
 
