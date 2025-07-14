@@ -126,10 +126,10 @@ class _ScanViewState extends State<ScanView> {
   Map<String, dynamic> get _creationParams {
     final color = widget.scanLineColor;
     return {
-      "r": (color.r * 1).round() & 0xff,
-      "g": (color.g * 1).round() & 0xff,
-      "b": (color.b * 1).round() & 0xff,
-      "a": (color.a * 1).round() & 0xff,
+      "r": color.r,
+      "g": color.g,
+      "b": color.b,
+      "a": color.a,
       "scale": widget.scanAreaScale,
     };
   }
