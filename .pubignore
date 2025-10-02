@@ -42,3 +42,4 @@ test_outputs/
 # Symbolication / obfuscation
 *.symbols
 *.map.json
+**/agconnect-services.json
