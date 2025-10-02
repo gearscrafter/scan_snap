@@ -1,6 +1,7 @@
 package com.gearscrafter.scan_snap
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.camera.core.ImageProxy
@@ -30,10 +31,35 @@ object QRCodeDecoder {
     }
 
     /**
+     * Checks if Huawei Mobile Services is available using reflection.
+     */
+    private fun isHMSAvailable(context: Context): Boolean {
+        return try {
+            val clazz = Class.forName("com.huawei.hms.api.HuaweiApiAvailability")
+            val instance = clazz.getMethod("getInstance").invoke(null)
+            val result = clazz.getMethod("isHuaweiMobileServicesAvailable", Context::class.java)
+                .invoke(instance, context) as Int
+            result == 0
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    /**
      * Decodes a QR code directly from an ImageProxy (from CameraX).
+     * Tries HMS first if available, then falls back to ZXing.
      */
     @SuppressLint("UnsafeOptInUsageError")
-    fun decodeQRCode(imageProxy: ImageProxy): String? {
+    fun decodeQRCode(imageProxy: ImageProxy, context: Context? = null): String? {
+        // Try HMS if available
+        if (context != null && isHMSAvailable(context)) {
+            try {
+                val result = decodeWithHMS(imageProxy)
+                if (result != null) return result
+            } catch (e: Exception) {
+                // HMS failed, continue to ZXing
+            }
+        }
         val image = imageProxy.image ?: return null
         val planes = image.planes
 
@@ -68,7 +94,20 @@ object QRCodeDecoder {
      * Decodes a QR code from an image file path.
      * This method is typically used by the ScanPlugin.kt class.
      */
-    fun syncDecodeQRCode(path: String): String? {
+    fun syncDecodeQRCode(path: String, context: Context? = null): String? {
+
+        // Try HMS if available
+        if (context != null && isHMSAvailable(context)) {
+            try {
+                val bitmap = pathToBitmap(path) ?: return null
+                val result = syncDecodeWithHMS(bitmap)
+                if (!bitmap.isRecycled) bitmap.recycle()
+                if (result != null) return result
+            } catch (e: Exception) {
+                // HMS failed, continue to ZXing
+            }
+        }
+
         val bitmap = pathToBitmap(path) ?: return null
         val yuvData = bitmapToYuv(bitmap)
         val source = PlanarYUVLuminanceSource(
@@ -86,6 +125,68 @@ object QRCodeDecoder {
                 bitmap.recycle()
             }
         }
+    }
+
+    private fun syncDecodeWithHMS(bitmap: Bitmap): String? {
+        return try {
+            val frameBuilder = Class.forName("com.huawei.hms.ml.scan.HmsScan\$Frame\$Builder")
+                .newInstance()
+            frameBuilder.javaClass.getMethod("setBitmap", Bitmap::class.java)
+                .invoke(frameBuilder, bitmap)
+            val frame = frameBuilder.javaClass.getMethod("build").invoke(frameBuilder)
+            
+            val options = Class.forName("com.huawei.hms.ml.scan.HmsScanAnalyzerOptions")
+                .getMethod("getDefault").invoke(null)
+            val analyzer = Class.forName("com.huawei.hms.ml.scan.HmsScanAnalyzer")
+                .getConstructor(options.javaClass).newInstance(options)
+            
+            val results = analyzer.javaClass.getMethod("analyze", frame.javaClass)
+                .invoke(analyzer, frame) as? List<*>
+            
+            results?.firstOrNull()?.javaClass?.getMethod("getOriginalValue")
+                ?.invoke(results.first()) as? String
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    /**
+     * Decodes using HMS Scan Kit via reflection.
+     */
+    @SuppressLint("UnsafeOptInUsageError")
+    private fun decodeWithHMS(imageProxy: ImageProxy): String? {
+        return try {
+            // Convert to Bitmap
+            val bitmap = imageProxyToBitmap(imageProxy) ?: return null
+            
+            // Use reflection to avoid compile-time dependency
+            val frameBuilder = Class.forName("com.huawei.hms.ml.scan.HmsScan\$Frame\$Builder")
+                .newInstance()
+            frameBuilder.javaClass.getMethod("setBitmap", Bitmap::class.java)
+                .invoke(frameBuilder, bitmap)
+            val frame = frameBuilder.javaClass.getMethod("build").invoke(frameBuilder)
+            
+            val options = Class.forName("com.huawei.hms.ml.scan.HmsScanAnalyzerOptions")
+                .getMethod("getDefault").invoke(null)
+            val analyzer = Class.forName("com.huawei.hms.ml.scan.HmsScanAnalyzer")
+                .getConstructor(options.javaClass).newInstance(options)
+            
+            val results = analyzer.javaClass.getMethod("analyze", frame.javaClass)
+                .invoke(analyzer, frame) as? List<*>
+            
+            results?.firstOrNull()?.javaClass?.getMethod("getOriginalValue")
+                ?.invoke(results.first()) as? String
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    @SuppressLint("UnsafeOptInUsageError")
+    private fun imageProxyToBitmap(imageProxy: ImageProxy): Bitmap? {
+        val buffer = imageProxy.planes[0].buffer
+        val bytes = ByteArray(buffer.remaining())
+        buffer.get(bytes)
+        return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
     }
 
      /**

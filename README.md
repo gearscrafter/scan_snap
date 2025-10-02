@@ -16,6 +16,7 @@ A simple, customizable, and high-performance QR and barcode scanner widget for F
 - **File Scanning**: Decode a QR/barcode from an image file path using `Scan.parse()`.
 - **Full Camera Control**: Pause, resume, and toggle the camera's torch using a `ScanController`.
 - **Native Performance**: Utilizes CameraX on Android and AVFoundation on iOS for optimal performance.
+- **🆕 Huawei HMS Support**: Optional integration with Huawei Scan Kit for devices without Google Play Services.
 
 ---
 
@@ -63,11 +64,130 @@ Also, ensure your `minSdkVersion` in `android/app/build.gradle` is set to at lea
 android {
     defaultConfig {
         ...
-        minSdkVersion 23
+        minSdkVersion 21
         ...
     }
 }
 ```
+---
+
+## 🌐 Huawei Mobile Services (HMS) Support
+
+This plugin includes **optional** support for Huawei Mobile Services (HMS), allowing the scanner to work on Huawei devices without Google Play Services (like devices with HarmonyOS).
+
+### When to Enable HMS
+
+Enable HMS support if:
+- Your app will be distributed on **Huawei AppGallery**
+- You want to support **Huawei devices** without Google Play Services
+- You're targeting markets where Huawei devices are popular
+
+### Setup HMS (Optional)
+
+#### Step 1: Create a Huawei Developer Account
+
+1. Go to [AppGallery Connect](https://developer.huawei.com/consumer/en/service/josp/agc/index.html)
+2. Create an account and set up a new project
+3. Add your app to the project with your package name
+
+#### Step 2: Download Configuration File
+
+1. In AppGallery Connect, go to **Project Settings** → **General Information**
+2. Download the `agconnect-services.json` file
+3. Place it in your `android/app/` directory
+
+```
+your_app/
+└── android/
+    └── app/
+        ├── build.gradle.kts
+        └── agconnect-services.json  ← Place here
+```
+
+#### Step 3: Configure Gradle Files
+
+**android/settings.gradle.kts:**
+
+```kotlin
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+        maven { url = uri("https://developer.huawei.com/repo/") }  // Add this
+    }
+
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id == "com.huawei.agconnect") {
+                useModule("com.huawei.agconnect:agcp:${requested.version}")
+            }
+        }
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = uri("https://developer.huawei.com/repo/") }  // Add this
+    }
+}
+```
+
+**android/build.gradle.kts:**
+
+```kotlin
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = uri("https://developer.huawei.com/repo/") }  // Add this
+    }
+    dependencies {
+        classpath("com.android.tools.build:gradle:8.9.1")
+        classpath("com.huawei.agconnect:agcp:1.9.1.301")  // Add this
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = uri("https://developer.huawei.com/repo/") }  // Add this
+    }
+}
+```
+
+**android/app/build.gradle.kts:**
+
+```kotlin
+plugins {
+    id("com.android.application")
+    id("kotlin-android")
+    id("com.huawei.agconnect")  // Add this
+    id("dev.flutter.flutter-gradle-plugin")
+}
+
+android {
+    // ... your existing configuration
+    defaultConfig {
+        applicationId = "com.your.package"  // Must match agconnect-services.json
+        // ...
+    }
+}
+
+dependencies {
+    // Your existing dependencies...
+}
+```
+
+#### Important Notes
+
+- **HMS is automatically enabled** if `agconnect-services.json` is present in your project
+- If the file is not found, the plugin will compile without HMS support (using only Google ML Kit/ZXing)
+- The `applicationId` in your `build.gradle.kts` **must match** the `package_name` in `agconnect-services.json`
 
 ---
 
@@ -173,6 +293,13 @@ If you use Proguard/R8 to shrink and obfuscate your release app, add the followi
 -keep class * implements androidx.camera.core.ImageAnalysis$Analyzer {
   *;
 }
+
+# Rules for Huawei HMS (if using HMS support)
+-keep class com.huawei.hianalytics.**{*;}
+-keep class com.huawei.updatesdk.**{*;}
+-keep class com.huawei.hms.**{*;}
+-dontwarn com.huawei.**
+
 ```
 
 ---

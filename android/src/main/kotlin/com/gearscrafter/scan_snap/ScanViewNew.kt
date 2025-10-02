@@ -177,7 +177,7 @@ class ScanViewNew(
         return ImageAnalysis.Analyzer { imageProxy ->
             try {
                 if (!scannedOnce) {
-                    QRCodeDecoder.decodeQRCode(imageProxy)?.let { result ->
+                    QRCodeDecoder.decodeQRCode(imageProxy, context)?.let { result ->
                         scannedOnce = true
                         Log.i(TAG, "✅ QR code detected: $result")
                         Handler(Looper.getMainLooper()).post {

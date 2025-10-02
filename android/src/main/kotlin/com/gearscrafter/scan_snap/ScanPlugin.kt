@@ -92,7 +92,7 @@ class ScanPlugin : FlutterPlugin, ActivityAware, MethodChannel.MethodCallHandler
                 if (path != null && context != null) {
                     launch {
                         val decoded = withContext(Dispatchers.IO) {
-                            QRCodeDecoder.syncDecodeQRCode(path)
+                            QRCodeDecoder.syncDecodeQRCode(path, context)
                         }
                         vibrateIfNeeded(context, decoded)
                         result.success(decoded)
