@@ -42,7 +42,7 @@ class _ScanPageState extends State<ScanPage> {
               ScanView(
                 controller: controller,
                 scanAreaScale: .7,
-                scanLineColor: Colors.green,
+                scanLineColor: Colors.limeAccent,
                 onCapture: _onCapture,
               ),
               Positioned(

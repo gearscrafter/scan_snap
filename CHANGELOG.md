@@ -1,3 +1,7 @@
+## 0.1.1
+
+- **fix:** Color values are now correctly converted from 0.0-1.0 range to 0-255.
+
 ## 0.1.0
 
 - **feat:** Added optional Huawei Mobile Services (HMS) support.
