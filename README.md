@@ -1,6 +1,6 @@
 # scan_snap
 
-[![pub](https://img.shields.io/badge/pub-0.0.1-blue)](https://pub.dev/packages/scan_snap) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![pub](https://img.shields.io/badge/pub-0.1.2-blue)](https://pub.dev/packages/scan_snap) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![SPM Support](https://img.shields.io/badge/SPM-Supported-green)](https://swift.org/package-manager/)
 
 
 A simple, customizable, and high-performance QR and barcode scanner widget for Flutter. Easily decode codes from the live camera stream or from image files.
@@ -17,6 +17,7 @@ A simple, customizable, and high-performance QR and barcode scanner widget for F
 - **Full Camera Control**: Pause, resume, and toggle the camera's torch using a `ScanController`.
 - **Native Performance**: Utilizes CameraX on Android and AVFoundation on iOS for optimal performance.
 - **🆕 Huawei HMS Support**: Optional integration with Huawei Scan Kit for devices without Google Play Services.
+- **📦 Swift Package Manager (SPM) Support**: Full native support on iOS/macOS via SPM.
 
 ---
 
@@ -69,6 +70,26 @@ android {
     }
 }
 ```
+### SPM Integration Details
+
+The package includes a `Package.swift` file at the root level that defines:
+
+- **Minimum iOS:** 11.0
+- **Minimum macOS:** 10.15
+- **Frameworks:** Foundation, UIKit, AVFoundation, Vision
+- **Swift Tools Version:** 6.2
+
+This allows developers and CI/CD systems to use `scan_snap` as a native Swift Package without going through Flutter's plugin system if needed.
+
+### Using SPM in Your iOS/macOS Project
+
+If you want to use `scan_snap` directly as a Swift Package (outside of Flutter):
+
+1. In Xcode: **File → Add Packages...**
+2. Enter your repository URL: `https://github.com/gearscrafter/scan_snap.git`
+3. Select version and target
+4. Xcode will automatically resolve and integrate the native components
+
 ---
 
 ## 🌐 Huawei Mobile Services (HMS) Support

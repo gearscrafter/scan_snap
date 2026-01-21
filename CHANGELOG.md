@@ -1,3 +1,10 @@
+## 0.1.2
+
+feat: Added full Swift Package Manager (SPM) support for iOS and macOS.
+fix: Updated Swift tools version to 6.2 for current compatibility.
+docs: Added SPM integration guide and macOS support documentation.
+docs: Added badge for SPM support in README.
+
 ## 0.1.1
 
 - **fix:** Color values are now correctly converted from 0.0-1.0 range to 0-255.
