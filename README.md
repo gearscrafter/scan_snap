@@ -1,6 +1,6 @@
 # scan_snap
 
-[![pub](https://img.shields.io/badge/pub-0.1.2-blue)](https://pub.dev/packages/scan_snap) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![pub](https://img.shields.io/badge/pub-0.2.1-blue)](https://pub.dev/packages/scan_snap) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
  [![SPM Support](https://img.shields.io/badge/SPM-Supported-green)](https://swift.org/package-manager/)
 
 

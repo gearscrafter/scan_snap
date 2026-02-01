@@ -1,3 +1,7 @@
+## 0.2.1
+
+- **fix:** Change LICENSE from UTF-8 Unicode to ASCII text
+
 ## 0.2.0
 
 - **chore:** Migrated license from MIT to Apache License 2.0
