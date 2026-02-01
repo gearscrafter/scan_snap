@@ -1,6 +1,6 @@
 name: scan_snap
 description: A Flutter QR/barcode scanner widget with camera view and image parsing.
-version: 0.2.1
+version: 0.2.2
 homepage: https://github.com/gearscrafter/scan_snap
 repository: https://github.com/gearscrafter/scan_snap
 issue_tracker: https://github.com/gearscrafter/scan_snap/issues

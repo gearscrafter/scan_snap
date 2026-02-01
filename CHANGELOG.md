@@ -1,3 +1,7 @@
+## 0.2.2
+
+- **fix:** Update official Apache 2.0 LICENSE file
+  
 ## 0.2.1
 
 - **fix:** Change LICENSE from UTF-8 Unicode to ASCII text
