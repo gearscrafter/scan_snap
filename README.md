@@ -1,6 +1,7 @@
 # scan_snap
 
-[![pub](https://img.shields.io/badge/pub-0.1.2-blue)](https://pub.dev/packages/scan_snap) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![SPM Support](https://img.shields.io/badge/SPM-Supported-green)](https://swift.org/package-manager/)
+[![pub](https://img.shields.io/badge/pub-0.1.2-blue)](https://pub.dev/packages/scan_snap) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+ [![SPM Support](https://img.shields.io/badge/SPM-Supported-green)](https://swift.org/package-manager/)
 
 
 A simple, customizable, and high-performance QR and barcode scanner widget for Flutter. Easily decode codes from the live camera stream or from image files.
@@ -331,4 +332,14 @@ This plugin is based on the  work of the original `scan` plugin created by [chav
 
 ### 📄 License
 
-[MIT License](https://opensource.org/licenses/MIT)
+This project is licensed under the **Apache License 2.0** - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 📞 Support
+
+For issues, feature requests, or questions, please open an issue on the [GitHub repository](https://github.com/gearscrafter/scan_snap).
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
